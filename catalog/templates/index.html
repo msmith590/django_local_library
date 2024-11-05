@@ -17,4 +17,8 @@
     <li><strong>History Genres:</strong> {{ num_genre_history }}</li>
     <li><strong>Adventure Books:</strong> {{ num_books_adventure }}</li>
   </ul>
+
+  <p>
+    You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.
+  </p>
 {% endblock %}
