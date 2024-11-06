@@ -10,34 +10,35 @@ def index(request):
     num_instances = BookInstance.objects.all().count()
 
     # Available books (status = 'a')
-    num_instances_available = BookInstance.objects.filter(status__exact='a').count()
+    num_instances_available = BookInstance.objects.filter(status__exact="a").count()
 
     # The 'all()' is implied by default.
     num_authors = Author.objects.count()
 
     # Generate counts of Genres that 'History' in the name
-    num_genre_history = Genre.objects.filter(name__icontains='history').count()
+    num_genre_history = Genre.objects.filter(name__icontains="history").count()
 
     # Generate counts of Books that contain 'Adventure' in the title
-    num_books_adventure = Book.objects.filter(title__icontains='adventure').count()
+    num_books_adventure = Book.objects.filter(title__icontains="adventure").count()
 
     # Number of visits to this view, as counted in the session variable
-    num_visits = request.session.get('num_visits', 0)
+    num_visits = request.session.get("num_visits", 0)
     num_visits += 1
-    request.session['num_visits'] = num_visits
+    request.session["num_visits"] = num_visits
 
     context = {
-        'num_books': num_books,
-        'num_instances': num_instances,
-        'num_instances_available': num_instances_available,
-        'num_authors': num_authors,
-        'num_genre_history': num_genre_history,
-        'num_books_adventure': num_books_adventure,
-        'num_visits': num_visits,
+        "num_books": num_books,
+        "num_instances": num_instances,
+        "num_instances_available": num_instances_available,
+        "num_authors": num_authors,
+        "num_genre_history": num_genre_history,
+        "num_books_adventure": num_books_adventure,
+        "num_visits": num_visits,
     }
 
     # Render the HTML template index.html with the data in the context variable
-    return render(request, 'index.html', context=context)
+    return render(request, "index.html", context=context)
+
 
 from django.views import generic
 
@@ -60,18 +61,30 @@ class AuthorDetailView(generic.DetailView):
     model = Author
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
-class LoanedBooksByUserListView(LoginRequiredMixin,generic.ListView):
+class LoanedBooksByUserListView(LoginRequiredMixin, generic.ListView):
     """Generic class-based view listing books on loan to current user."""
+
     model = BookInstance
-    template_name = 'catalog/bookinstance_list_borrowed_user.html'
+    template_name = "catalog/bookinstance_list_borrowed_user.html"
     paginate_by = 10
 
     def get_queryset(self):
         return (
             BookInstance.objects.filter(borrower=self.request.user)
-            .filter(status__exact='o')
-            .order_by('due_back')
+            .filter(status__exact="o")
+            .order_by("due_back")
         )
+
+
+class AllLoanedBooksView(LoginRequiredMixin, PermissionRequiredMixin, generic.ListView):
+    """Generic class-based view listing all loaned books to users."""
+    permission_required = 'catalog.can_mark_returned'
+    model = BookInstance
+    template_name = "catalog/bookinstance_list_all_borrowers.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(status__exact="o").order_by("due_back")
