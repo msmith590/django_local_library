@@ -26,6 +26,7 @@
               <li>
                 <a href="{% url 'authors' %}">All authors</a>
               </li>
+              <br />
               {% if user.is_authenticated %}
                 <li>User: {{ user.get_username }}</li>
 
@@ -47,7 +48,11 @@
                     <a href="{% url 'all-borrowed' %}">All borrowed</a>
                   </li>
                   {% if perms.catalog.add_author %}
+                    <hr \>
                     <li><a href="{% url "author-create" %}">Create author</a></li>
+                  {% endif %}
+                  {% if perms.catalog.add_book %}
+                    <li><a href="{% url "book-create" %}">Create book</a></li>
                   {% endif %}
                 {% endif %}
               {% else %}
